@@ -24,8 +24,9 @@ export default {
     return {
       option: {
         xAxis: {
-          type: "category",
-          data: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+          type: 'category', // category为一级分类,适用于离散的类目数据
+          boundaryGap: false,  // 无间隙
+          data: Array.from(Array(100), (v,k) =>k)
         },
         yAxis: {
           type: "value"
@@ -50,10 +51,8 @@ export default {
 
     },
     updateData() {
-      let _this = this;
-      axios
-          .get("/api/init")
-          .then(response => (this.data = response.data));
+      let abc=this
+
       this.timer = setInterval(() => {
         //console.log(_this)
         // console.log(this)
@@ -62,10 +61,19 @@ export default {
 
         // 获取真实数据
         //console.log(JSON.parse(JSON.stringify(_this.option.series[0])));
+        let handler=function(response){
+          let _this=abc
+          //console.log(response)
 
-        this.option.series[0].data[0] += 10;
-        //this._init()
-        //console.log(_this.setOption)
+          _this.option.series[0].data.push(response.data["now_bytes"])
+
+        }
+        axios
+            .get("/api/counter")
+            .then(response=>handler(response));
+
+        // 无用，因为vue无法识别数组内的更改
+        //this.option.series[0].data[0] += 10;
         window.a = _this;
       }, 1000);
     }
