@@ -74,7 +74,7 @@ export default {
 
         // 无用，因为vue无法识别数组内的更改
         //this.option.series[0].data[0] += 10;
-        window.a = _this;
+        window.a = abc;
       }, 1000);
     }
   }
