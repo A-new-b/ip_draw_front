@@ -12,9 +12,11 @@
 
 
     <v-container style="display: flex;flex-direction: row;justify-content: center">
-      <v-btn color="primary" style="margin: 1%">开始监听</v-btn>
-      <v-btn color="primary" style="margin: 1%">停止监听</v-btn>
+      <v-btn @click="startListen" color="primary" style="margin: 1%">开始监听</v-btn>
+      <v-btn @click="endListen" color="primary" style="margin: 1%">停止监听</v-btn>
+      <status-indicator active id="indicator" />
     </v-container>
+
   </div>
 
 </template>
@@ -24,25 +26,29 @@
 import ECharts from "vue-echarts";
 import "echarts/lib/chart/line";
 import "echarts/lib/component/polar";
-import 'echarts/lib/component/title'
-import 'echarts/lib/component/tooltip'
+import "echarts/lib/component/title";
+import "echarts/lib/component/tooltip";
+import { StatusIndicator } from "vue-status-indicator"; // 彩色圆点指示器
 import axios from "axios";
 
 export default {
   components: {
+    StatusIndicator,
     "v-chart": ECharts
   },
   data() {
     return {
       now_num: undefined,
       now_bytes: undefined,
+      interval_for_update: undefined,
+      stopped: false,
       option_for_second_num: {
         title: {
-          left: 'center',
-          text: '每秒处理数据包/个',
+          left: "center",
+          text: "每秒处理数据包/个"
         },
         tooltip: {
-          trigger: "axis",
+          trigger: "axis"
 
           // axisPointer: {
           //   type: 'cross',
@@ -75,7 +81,7 @@ export default {
         series: [
           {
             // data: [150, 230, 224, 218, 135, 147, 260],
-            name:"每秒数据包",
+            name: "每秒数据包",
             data: [],
             showSymbol: true,
             hoverAnimation: false,
@@ -85,11 +91,11 @@ export default {
       },
       option_for_second_bytes: {
         title: {
-          left: 'center',
-          text: '每秒处理数据/字节',
+          left: "center",
+          text: "每秒处理数据/字节"
         },
         tooltip: {
-          trigger: "axis",
+          trigger: "axis"
           // axisPointer: {
           //   animation: false
           // }
@@ -110,11 +116,11 @@ export default {
         series: [
           {
             // data: [150, 230, 224, 218, 135, 147, 260],
-            name:"每秒字节",
+            name: "每秒字节",
             data: [],
             showSymbol: true,
             hoverAnimation: false,
-            type: "line",
+            type: "line"
           }
         ]
       }
@@ -126,18 +132,31 @@ export default {
   },
   methods: {
     startListen() {
+      this.stopped = false;
+      axios.get("/api/init").then(function() {
+        document.getElementById("indicator").removeAttribute("negative");
+        document.getElementById("indicator").setAttribute("active", "");
+      });
+      //this.$refs.indicator.$attrs={active:""} //TypeError: Cannot set property '$attrs' of undefined
 
     },
     endListen() {
+      this.stopped = true;
+      //this.$refs.indicator.$attrs={negative:""}
 
+      axios.get("/api/stop").then(function() {
+        document.getElementById("indicator").removeAttribute("active");
+        document.getElementById("indicator").setAttribute("negative", "");
+      });
     },
     setIntervalForUpdate() {
       let abc = this;
 
-      this.timer = setInterval(() => {
+      this.interval_for_update = setInterval(() => {
         // 获取真实数据
         //console.log(JSON.parse(JSON.stringify(_this.option.series[0])));
-
+        if (this.stopped)
+          return;
 
         let handler = function(response) {
           let _this = abc;

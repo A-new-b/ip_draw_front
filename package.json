@@ -12,6 +12,7 @@
     "echarts": "4.1.0",
     "vue": "^2.6.11",
     "vue-echarts": "4.1.0",
+    "vue-status-indicator": "^1.2.1",
     "vuetify": "^2.4.0"
   },
   "devDependencies": {
@@ -44,7 +45,9 @@
     "parserOptions": {
       "parser": "babel-eslint"
     },
-    "rules": {"no-unused-vars": "off"}
+    "rules": {
+      "no-unused-vars": "off"
+    }
   },
   "browserslist": [
     "> 1%",
