@@ -23,17 +23,35 @@ export default {
   data() {
     return {
       option: {
+        tooltip: {
+          trigger: 'axis',
+          axisPointer: {
+            animation: false
+          }
+        },
         xAxis: {
-          type: 'category', // category为一级分类,适用于离散的类目数据
-          boundaryGap: false,  // 无间隙
-          data: Array.from(Array(100), (v,k) =>k)
+          // type: 'category', // category为一级分类,适用于离散的类目数据
+          // boundaryGap: false,  // 无间隙
+          // data: Array.from(Array(100), (v,k) =>k)
+
+          type: "time",
+          splitLine: {
+            show: false
+          }
         },
         yAxis: {
-          type: "value"
+          type: "value",
+          boundaryGap: [0, "100%"],
+          splitLine: {
+            show: true
+          }
         },
         series: [
           {
-            data: [150, 230, 224, 218, 135, 147, 260],
+            // data: [150, 230, 224, 218, 135, 147, 260],
+            data: [],
+            showSymbol: true,
+            hoverAnimation: false,
             type: "line"
           }
         ]
@@ -41,6 +59,7 @@ export default {
     };
   },
   mounted() {
+    this.initalizeData()
     this.updateData();
   },
   methods: {
@@ -51,7 +70,7 @@ export default {
 
     },
     updateData() {
-      let abc=this
+      let abc = this;
 
       this.timer = setInterval(() => {
         //console.log(_this)
@@ -61,21 +80,42 @@ export default {
 
         // 获取真实数据
         //console.log(JSON.parse(JSON.stringify(_this.option.series[0])));
-        let handler=function(response){
-          let _this=abc
+
+
+        let handler = function(response) {
+          let _this = abc;
           //console.log(response)
+          _this.option.series[0].data.shift()
+          _this.option.series[0].data.push(_this.packTimeAndData(response.data["now_bytes"]));
 
-          _this.option.series[0].data.push(response.data["now_bytes"])
-
-        }
+        };
         axios
             .get("/api/counter")
-            .then(response=>handler(response));
+            .then(response => handler(response));
 
         // 无用，因为vue无法识别数组内的更改
         //this.option.series[0].data[0] += 10;
         window.a = abc;
       }, 1000);
+    },
+    initalizeData() {
+      let now = new Date();
+      for (let i = -100; i < 0; i++) {
+        let time = new Date(now.getTime() + i * 1000);
+        console.log(time)
+        this.option.series[0].data.push([time,0]);
+      }
+    }
+    ,
+    packTimeAndData(value) {
+      let now = new Date();
+      return {
+        name: now.toString(),
+        value: [
+          now,
+          value
+        ]
+      };
     }
   }
 
